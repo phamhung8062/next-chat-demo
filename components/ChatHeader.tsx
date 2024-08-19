@@ -1,43 +1,133 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
-import { supabaseBrowser } from "@/lib/supabase/browser";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import ChatPresence from "./ChatPresence";
+import { fetchApi } from "@/lib/apiClient";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Data,
+  DataWaittingScan,
+  getQrcode,
+  getWaittingScan,
+  getZaloSession,
+  QrResponse,
+} from "@/src/service/LoginService";
+import { generateAndStoreCode } from "@/lib/utils";
 
 export default function ChatHeader({ user }: { user: User | undefined }) {
-	const router = useRouter();
+  const router = useRouter();
+  const [qrCodeData, setQrCodeData] = useState<Data | {}>({});
+  const [openLogin, setOpenLogin] = useState<boolean>(false);
+  const [userProfile, setUserProfile] = useState<DataWaittingScan | {}>({});
+  useEffect(() => {
+	const zpdid: string | null = localStorage.getItem("zpdid");
+    if (!zpdid) {
+      const newCode = generateAndStoreCode("zpdid", 32);
+    }
+    getZaloSession();
+  }, []);
 
-	const handleLoginWithGithub = () => {
-		const supabase = supabaseBrowser();
-		supabase.auth.signInWithOAuth({
-			provider: "github",
-			options: {
-				redirectTo: location.origin + "/auth/callback",
-			},
-		});
-	};
+  const handleLoginWithGithub = async () => {
+    const qrResponse = await getQrcode();
+    if (qrResponse) {
+      setQrCodeData(qrResponse.data);
+      setOpenLogin(true);
+    //   console.log("qrResponse", qrResponse);
+      const code: string = qrResponse.data.code;
+      const userProfilerResponse = await getWaittingScan(code);
+      if (userProfilerResponse) {
+        console.log("Scan response:", userProfilerResponse);
+        if (userProfilerResponse.data.code) {
+          setOpenLogin(false);
+          setUserProfile(userProfilerResponse.data);
+          console.log("Login successful");
+        } else {
+          console.log("Waiting scan did not succeed:", qrResponse);
+        }
+      }
+    }
+  };
+  const handleLogout = async () => {
+    router.refresh();
+  };
 
-	const handleLogout = async () => {
-		const supabase = supabaseBrowser();
-		await supabase.auth.signOut();
-		router.refresh();
-	};
+  const handleClose = () => {
+    console.log("Dialog has been closed");
+    setOpenLogin(false);
+    setQrCodeData({});
+  };
 
-	return (
-		<div className="h-20">
-			<div className="p-5 border-b flex items-center justify-between h-full">
-				<div>
-					<h1 className="text-xl font-bold">Daily Chat</h1>
-					<ChatPresence />
-				</div>
-				{user ? (
-					<Button onClick={handleLogout}>Logout</Button>
-				) : (
-					<Button onClick={handleLoginWithGithub}>Login</Button>
-				)}
-			</div>
-		</div>
-	);
+  const renderDialogDemo = () => {
+    const { image } = qrCodeData;
+    return (
+      <Dialog
+        defaultOpen
+        onOpenChange={(open) => (open ? setOpenLogin(true) : handleClose())}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Quét đuê người ae</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {image && (
+              <div className="flex justify-center">
+                <img src={image} alt="QR Code" className="w-50 h-50" />
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
+  const renderAvatar = () => {
+    const { avatar, display_name } = userProfile;
+    return (
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <img
+          src={avatar}
+          alt="User Avatar"
+          style={{
+            width: "50px",
+            height: "50px",
+            borderRadius: "50%",
+            marginRight: "10px",
+          }}
+        />
+        <span style={{ fontSize: "16px", fontWeight: "bold" }}>
+          {display_name}
+        </span>
+      </div>
+    );
+  };
+
+  return (
+    <div className="h-20">
+      <div className="p-5 border-b flex items-center justify-between h-full">
+        <div>
+          <h1 className="text-xl font-bold">Daily Chat</h1>
+          {userProfile && userProfile?.avatar ? renderAvatar() : ""}
+          <ChatPresence />
+        </div>
+        {user ? (
+          <Button onClick={handleLogout}>Logout</Button>
+        ) : (
+          <Button onClick={handleLoginWithGithub}>Login</Button>
+        )}
+      </div>
+      {openLogin ? renderDialogDemo() : null}
+    </div>
+  );
 }
