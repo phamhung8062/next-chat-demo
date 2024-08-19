@@ -24,7 +24,7 @@ export const getZaloSession = async () => {
         'sec-fetch-mode': 'cors',
         'sec-fetch-site': 'same-origin',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
-        'cookie': `zpdid=${zpdid};_zlang=vn;`,
+        // 'cookie': `zpdid=${zpdid};_zlang=vn;`,
       },
     });
   } catch (error) {
@@ -92,7 +92,7 @@ export const getQrcode = async (): Promise<QrResponse | undefined> => {
 
 export interface WaittingScanResponse {
   error_message: string;
-  data: Data;
+  data: DataWaittingScan;
   error_code: number;
 }
 

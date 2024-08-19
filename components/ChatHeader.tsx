@@ -14,8 +14,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Data,
   DataWaittingScan,
@@ -34,7 +32,7 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
   useEffect(() => {
 	const zpdid: string | null = localStorage.getItem("zpdid");
     if (!zpdid) {
-      const newCode = generateAndStoreCode("zpdid", 32);
+      generateAndStoreCode("zpdid", 32);
     }
     getZaloSession();
   }, []);
@@ -44,12 +42,10 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
     if (qrResponse) {
       setQrCodeData(qrResponse.data);
       setOpenLogin(true);
-    //   console.log("qrResponse", qrResponse);
       const code: string = qrResponse.data.code;
       const userProfilerResponse = await getWaittingScan(code);
       if (userProfilerResponse) {
-        console.log("Scan response:", userProfilerResponse);
-        if (userProfilerResponse.data.code) {
+        if (userProfilerResponse.data.display_name) {
           setOpenLogin(false);
           setUserProfile(userProfilerResponse.data);
           console.log("Login successful");
@@ -117,11 +113,10 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
     <div className="h-20">
       <div className="p-5 border-b flex items-center justify-between h-full">
         <div>
-          <h1 className="text-xl font-bold">Daily Chat</h1>
-          {userProfile && userProfile?.avatar ? renderAvatar() : ""}
+          {userProfile && userProfile?.avatar ? renderAvatar() : <h1 className="text-xl font-bold">Daily Chat</h1>}
           <ChatPresence />
         </div>
-        {user ? (
+        {userProfile && userProfile?.avatar ? (
           <Button onClick={handleLogout}>Logout</Button>
         ) : (
           <Button onClick={handleLoginWithGithub}>Login</Button>
