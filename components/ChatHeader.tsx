@@ -21,6 +21,7 @@ import {
   getWaittingScan,
   getZaloSession,
   QrResponse,
+  veryfifyClient,
 } from "@/src/service/LoginService";
 import { generateAndStoreCode } from "@/lib/utils";
 
@@ -38,6 +39,7 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
   }, []);
 
   const handleLoginWithGithub = async () => {
+    veryfifyClient();
     const qrResponse = await getQrcode();
     if (qrResponse) {
       setQrCodeData(qrResponse.data);
