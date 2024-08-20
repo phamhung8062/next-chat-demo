@@ -20,6 +20,7 @@ import {
   getQrcode,
   getWaittingScan,
   getZaloSession,
+  getZpid,
   QrResponse,
   veryfifyClient,
 } from "@/src/service/LoginService";
@@ -32,13 +33,13 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
   const [userProfile, setUserProfile] = useState<DataWaittingScan | {}>({});
   useEffect(() => {
     const zpdid: string | null = localStorage.getItem("zpdid");
-    if (!zpdid) {
-      generateAndStoreCode("zpdid", 32);
+    if (!zpdid || zpdid == null) {
+      getZpid();
     }
-    getZaloSession();
   }, []);
 
   const handleLoginWithGithub = async () => {
+    getZaloSession();
     veryfifyClient();
     const qrResponse = await getQrcode();
     if (qrResponse) {
