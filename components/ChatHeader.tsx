@@ -121,19 +121,22 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
       </div>
     );
   };
-
+  let avatar: string | undefined;
+  if ("avatar" in userProfile) {
+    avatar = userProfile.avatar;
+  }
   return (
     <div className="h-20">
       <div className="p-5 border-b flex items-center justify-between h-full">
         <div>
-          {userProfile && userProfile?.avatar ? (
+          {userProfile && avatar ? (
             renderAvatar()
           ) : (
             <h1 className="text-xl font-bold">Daily Chat</h1>
           )}
           <ChatPresence />
         </div>
-        {userProfile && userProfile?.avatar ? (
+        {userProfile && avatar ? (
           <Button onClick={handleLogout}>Logout</Button>
         ) : (
           <Button onClick={handleLoginWithGithub}>Login</Button>
