@@ -30,7 +30,7 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
   const [openLogin, setOpenLogin] = useState<boolean>(false);
   const [userProfile, setUserProfile] = useState<DataWaittingScan | {}>({});
   useEffect(() => {
-	const zpdid: string | null = localStorage.getItem("zpdid");
+    const zpdid: string | null = localStorage.getItem("zpdid");
     if (!zpdid) {
       generateAndStoreCode("zpdid", 32);
     }
@@ -42,6 +42,7 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
     if (qrResponse) {
       setQrCodeData(qrResponse.data);
       setOpenLogin(true);
+      //   console.log("qrResponse", qrResponse);
       const code: string = qrResponse.data.code;
       const userProfilerResponse = await getWaittingScan(code);
       if (userProfilerResponse) {
@@ -66,7 +67,11 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
   };
 
   const renderDialogDemo = () => {
-    const { image } = qrCodeData;
+    // const { image } = qrCodeData;
+    let image: string | undefined;
+    if ("image" in qrCodeData) {
+      image = qrCodeData.image;
+    }
     return (
       <Dialog
         defaultOpen
@@ -77,7 +82,7 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
             <DialogTitle>Quét đuê người ae</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            {image && (
+            {qrCodeData && (
               <div className="flex justify-center">
                 <img src={image} alt="QR Code" className="w-50 h-50" />
               </div>
@@ -89,7 +94,15 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
   };
 
   const renderAvatar = () => {
-    const { avatar, display_name } = userProfile;
+    let avatar: string | undefined;
+    if ("avatar" in userProfile) {
+      avatar = userProfile.avatar;
+    }
+    let display_name: string | undefined;
+    if ("display_name" in userProfile) {
+      display_name = userProfile.display_name;
+    }
+    // const { avatar, display_name } = userProfile;
     return (
       <div style={{ display: "flex", alignItems: "center" }}>
         <img
@@ -113,7 +126,11 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
     <div className="h-20">
       <div className="p-5 border-b flex items-center justify-between h-full">
         <div>
-          {userProfile && userProfile?.avatar ? renderAvatar() : <h1 className="text-xl font-bold">Daily Chat</h1>}
+          {userProfile && userProfile?.avatar ? (
+            renderAvatar()
+          ) : (
+            <h1 className="text-xl font-bold">Daily Chat</h1>
+          )}
           <ChatPresence />
         </div>
         {userProfile && userProfile?.avatar ? (
