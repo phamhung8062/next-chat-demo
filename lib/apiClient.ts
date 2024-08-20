@@ -31,3 +31,16 @@ interface FetchApiOptions {
       throw error;
     }
   }
+
+  import axios from 'axios';
+
+  export const getFinalLocationAndCookies = async () => {
+  try {
+    const response = await axios.get('/api/get-cookie');
+    console.log('Final Location:', response.data.location);
+    console.log('Cookies:', response.data.cookies);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
+

@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import ChatPresence from "./ChatPresence";
-import { fetchApi } from "@/lib/apiClient";
+import { fetchApi, getFinalLocationAndCookies } from "@/lib/apiClient";
 import {
   Dialog,
   DialogContent,
@@ -39,25 +39,26 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
   }, []);
 
   const handleLoginWithGithub = async () => {
-    getZaloSession();
-    veryfifyClient();
-    const qrResponse = await getQrcode();
-    if (qrResponse) {
-      setQrCodeData(qrResponse.data);
-      setOpenLogin(true);
-      //   console.log("qrResponse", qrResponse);
-      const code: string = qrResponse.data.code;
-      const userProfilerResponse = await getWaittingScan(code);
-      if (userProfilerResponse) {
-        if (userProfilerResponse.data.display_name) {
-          setOpenLogin(false);
-          setUserProfile(userProfilerResponse.data);
-          console.log("Login successful");
-        } else {
-          console.log("Waiting scan did not succeed:", qrResponse);
-        }
-      }
-    }
+    getFinalLocationAndCookies();
+    // getZaloSession();
+    // veryfifyClient();
+    // const qrResponse = await getQrcode();
+    // if (qrResponse) {
+    //   setQrCodeData(qrResponse.data);
+    //   setOpenLogin(true);
+    //   //   console.log("qrResponse", qrResponse);
+    //   const code: string = qrResponse.data.code;
+    //   const userProfilerResponse = await getWaittingScan(code);
+    //   if (userProfilerResponse) {
+    //     if (userProfilerResponse.data.display_name) {
+    //       setOpenLogin(false);
+    //       setUserProfile(userProfilerResponse.data);
+    //       console.log("Login successful");
+    //     } else {
+    //       console.log("Waiting scan did not succeed:", qrResponse);
+    //     }
+    //   }
+    // }
   };
   const handleLogout = async () => {
     router.refresh();
