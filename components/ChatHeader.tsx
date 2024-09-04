@@ -19,6 +19,7 @@ import {
   DataWaittingScan,
   getQrcode,
   getWaittingScan,
+  getWaittingScanConfirm,
   getZaloSession,
   getZpid,
   QrResponse,
@@ -38,27 +39,39 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
     }
   }, []);
 
+
+const localStorageToCookies =()=> {
+  Object.keys(localStorage).forEach(key => {
+    const value = localStorage.getItem(key);
+    document.cookie = `${key}=${value};path=/`;
+  });
+}
+
+// Gọi hàm để chuyển các giá trị localStorage thành cookie
+localStorageToCookies();
   const handleLoginWithGithub = async () => {
-    getFinalLocationAndCookies();
-    // getZaloSession();
-    // veryfifyClient();
-    // const qrResponse = await getQrcode();
-    // if (qrResponse) {
-    //   setQrCodeData(qrResponse.data);
-    //   setOpenLogin(true);
-    //   //   console.log("qrResponse", qrResponse);
-    //   const code: string = qrResponse.data.code;
-    //   const userProfilerResponse = await getWaittingScan(code);
-    //   if (userProfilerResponse) {
-    //     if (userProfilerResponse.data.display_name) {
-    //       setOpenLogin(false);
-    //       setUserProfile(userProfilerResponse.data);
-    //       console.log("Login successful");
-    //     } else {
-    //       console.log("Waiting scan did not succeed:", qrResponse);
-    //     }
-    //   }
-    // }
+    getZaloSession();
+    veryfifyClient();
+    const qrResponse = await getQrcode();
+    if (qrResponse) {
+      setQrCodeData(qrResponse.data);
+      setOpenLogin(true);
+      //   console.log("qrResponse", qrResponse);
+      const code: string = qrResponse.data.code;
+      const userProfilerResponse = await getWaittingScan(code);
+      if (userProfilerResponse) {
+        if (userProfilerResponse.data.display_name) {
+          const userProfilerResponse1 = await getWaittingScanConfirm(code);
+          setOpenLogin(false);
+          setUserProfile(userProfilerResponse.data);
+          console.log("Login successful");
+          localStorageToCookies();
+          getFinalLocationAndCookies();
+        } else {
+          console.log("Waiting scan did not succeed:", qrResponse);
+        }
+      }
+    }
   };
   const handleLogout = async () => {
     router.refresh();
