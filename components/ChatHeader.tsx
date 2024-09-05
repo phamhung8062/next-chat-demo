@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import ChatPresence from "./ChatPresence";
-import { fetchApi, getFinalLocationAndCookies } from "@/lib/apiClient";
+import { getFinalLocationAndCookies } from "@/lib/apiClient";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +26,6 @@ import {
   veryfifyClient,
 } from "@/src/service/LoginService";
 import { generateAndStoreCode } from "@/lib/utils";
-import { Data } from "src\service\LoginService";
 
 export default function ChatHeader({ user }: { user: User | undefined }) {
   const router = useRouter();
