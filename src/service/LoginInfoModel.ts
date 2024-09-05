@@ -18,7 +18,7 @@ export class LoginInfoModel {
     this.enc_ver = 'v2';
     this.zcid = null;
     this.encryptKey = null;
-    this.zcid_ext = '547dc02';
+    this.zcid_ext = '1ba189';
 
     this.createZcid(type, imei, firstLaunchTime);
     this.createEncryptKey();

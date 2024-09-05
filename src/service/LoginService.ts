@@ -269,7 +269,7 @@ export const getLoginInfo = async (zcid: string, zcidExt: string, params:string)
     // zpsid="66aK.414443736.95.EirmzX2EJSJ8PlxS78vDn6NzF_0Xkddm8xb-yckNKqGovHza4OeM7NQEJSG";
 
     const response = await fetchApiProxy({
-      url: `https://wpa.chat.zalo.me/api/login/getLoginInfo?zcid=${zcid}&zcid_ext=${zcidExt}&enc_ver=v2&params=${params}&type=30&client_version=641`,
+      url: `https://wpa.chat.zalo.me/api/login/getLoginInfo?zcid=${zcid}&zcid_ext=${zcidExt}&enc_ver=v2&params=${encodeURIComponent(params)}&type=30&client_version=641`,
       method: 'GET',
       headers: {
         'accept': 'application/json, text/plain, */*',

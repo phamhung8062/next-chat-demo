@@ -45,6 +45,7 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
   };
 
   const handleLoginWithGithub = async () => {
+    // getLoginInfoData();
     getZaloSession();
     veryfifyClient();
     const qrResponse = await getQrcode();
@@ -95,29 +96,37 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
     var userAgent =
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
     var imei = getImei(userAgent);
+    imei="04880326-6619-49ec-a4fc-bc1d8ce204e8-362d7fe3d8b2581bffa359f0eeda7106";
     console.log("imei", imei);
+    const date = Date.now();
+    console.log("date", date);
     const loginInfoModel = new LoginInfoModel({
       type: 30,
       imei: imei,
-      firstLaunchTime: Date.now(),
+      firstLaunchTime: date,
     });
-    const object: string=`{"imei":${imei},"computer_name":"Web","language":"vi","ts":${Date.now()}}`;
-    const encryptKey: string=loginInfoModel.getEncryptKey() || "";
-    console.log("encryptKey",encryptKey);
-    const params: string =LoginInfoModel.encodeAES(
-      encryptKey,
-      object,
-      "base64",
-      false
-    ) || "";
-    console.log("paramUrl",params);
-    var zcid =loginInfoModel.zcid ||
-      "61359529F7EB5D5FABC3DE7675F0A1F3252F150B8A9EBFB3F0A1F55BCBF2F29AC609002EBE0EF4A31CD84E260B9FB7F6EC732EC25EE0EEC6541040D455D52DAFA2B4BCC3EDA82CD02F214DBEEF5E3018E6430387F3B785EC492195F10205EDD6";
-    var zcidExt = loginInfoModel.zcid_ext || "65fc2f";
-    // var params =
-      // "DqK6WSnpfa21o5p97otUzZaH6AX0lR3ifmtyB6kObm4FzMZAgNHosTE86uCD12VpfYxsrBopYo7BYSS0QDjwbFcSoyF%2FoHHdtPX5559RfpzkwBbX49wqqm2aHAMZ0wGIjA6IvaMlgs7DvJ23mnaI%2FGLQ%2FgFkVGsp9gVWVSRnhlzd96ZIrh2yOk%2BPanuNbf9f";
-    const loginInfoData = await getLoginInfo(zcid, zcidExt, params);
-    console.log("loginInfoData", loginInfoData);
+    const object: any = {
+      imei: imei,
+      computer_name: "Web",
+      language: "vi",
+      ts: date,
+    };
+    const encryptKey: string = loginInfoModel.getEncryptKey() || "";
+    console.log("encryptKey", encryptKey);
+    const params: string =
+      LoginInfoModel.encodeAES(
+        encryptKey,
+        JSON.stringify(object),
+        "base64",
+        false
+      ) || "";
+    console.log("paramUrl", params);
+    var zcid =loginInfoModel.zcid || "";
+    var zcidExt = loginInfoModel.zcid_ext;
+    setTimeout(async () => {
+      const loginInfoData = await getLoginInfo(zcid, zcidExt, params);
+      console.log("loginInfoData", loginInfoData);
+    }, 5000);
   };
 
   const loginSuccess = async () => {
