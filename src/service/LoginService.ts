@@ -162,6 +162,10 @@ export interface WaittingScanResponse {
 export interface DataWaittingScan {
   avatar: string;
   display_name: string;
+  image: string;
+  code: string;
+  options: Options;
+  token: string;
 }
 
 

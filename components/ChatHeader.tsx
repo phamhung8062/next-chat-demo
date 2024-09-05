@@ -26,6 +26,7 @@ import {
   veryfifyClient,
 } from "@/src/service/LoginService";
 import { generateAndStoreCode } from "@/lib/utils";
+import { Data } from "src\service\LoginService";
 
 export default function ChatHeader({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -39,16 +40,13 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
     }
   }, []);
 
+  const localStorageToCookies = () => {
+    Object.keys(localStorage).forEach((key) => {
+      const value = localStorage.getItem(key);
+      document.cookie = `${key}=${value};`;
+    });
+  };
 
-const localStorageToCookies =()=> {
-  Object.keys(localStorage).forEach(key => {
-    const value = localStorage.getItem(key);
-    document.cookie = `${key}=${value};path=/`;
-  });
-}
-
-// Gọi hàm để chuyển các giá trị localStorage thành cookie
-localStorageToCookies();
   const handleLoginWithGithub = async () => {
     getZaloSession();
     veryfifyClient();
@@ -56,23 +54,49 @@ localStorageToCookies();
     if (qrResponse) {
       setQrCodeData(qrResponse.data);
       setOpenLogin(true);
-      //   console.log("qrResponse", qrResponse);
       const code: string = qrResponse.data.code;
       const userProfilerResponse = await getWaittingScan(code);
-      if (userProfilerResponse) {
-        if (userProfilerResponse.data.display_name) {
-          const userProfilerResponse1 = await getWaittingScanConfirm(code);
-          setOpenLogin(false);
-          setUserProfile(userProfilerResponse.data);
-          console.log("Login successful");
-          localStorageToCookies();
-          getFinalLocationAndCookies();
-        } else {
-          console.log("Waiting scan did not succeed:", qrResponse);
+      if(userProfilerResponse){
+        if (userProfilerResponse && userProfilerResponse.data.display_name) {
+          if (userProfilerResponse.data.display_name) {
+            const userProfilerResponse1 = await getWaittingScanConfirm(code);
+            setOpenLogin(false);
+            setUserProfile(userProfilerResponse.data);
+            console.log("Login successful");
+            localStorageToCookies();
+            getFinalLocationAndCookies();
+          } else {
+            console.log("Waiting scan did not succeed:", qrResponse);
+          }
+        }else if (userProfilerResponse && userProfilerResponse.data.code) {
+           let dataQr :Data = {
+            image: userProfilerResponse.data.image,
+            code: userProfilerResponse.data.code,
+            token: userProfilerResponse.data.token,
+            options: userProfilerResponse.data.options
+          } 
+          setQrCodeData(dataQr);
+          const code: string = userProfilerResponse.data.code;
+          const userProfilerResponse2 = await getWaittingScan(code);
+          if (userProfilerResponse2 && userProfilerResponse2.data.display_name) {
+            const userProfilerResponse1 = await getWaittingScanConfirm(code);
+            setOpenLogin(false);
+            setUserProfile(userProfilerResponse2.data);
+            console.log("Login successful");
+            localStorageToCookies();
+            getFinalLocationAndCookies();
+          } else {
+            console.log("Waiting scan did not succeed:", qrResponse);
+          }
         }
       }
     }
   };
+
+  const loginSuccess= async () => {
+    router.refresh();
+  };
+
   const handleLogout = async () => {
     router.refresh();
   };
