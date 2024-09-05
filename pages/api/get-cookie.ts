@@ -3,12 +3,11 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 interface CheckSessionResponse {
   location?: string;
-  cookies?: string | null;
+  cookies?: {} | null;
 }
 
 const checkSession = async (url: string, headers: Record<string, string>): Promise<CheckSessionResponse> => {
   try {
-    console.log('url', url);
     const response: AxiosResponse = await axios.get(url, {
       headers,
       maxRedirects: 0, // Do not follow redirects automatically
@@ -16,28 +15,19 @@ const checkSession = async (url: string, headers: Record<string, string>): Promi
     });
     const location = response.headers['location'];
     const setCookieHeader = response.headers['set-cookie'];
-    console.log('setCookieHeader', response);
-    console.log('setCookieHeader', setCookieHeader);
-
-    if (setCookieHeader) {
-      // Tìm và lưu giá trị zpsid vào localStorage
-      const zpw_sek = setCookieHeader.find((cookie: string) => cookie.startsWith('zpw_sek='));
-      console.log('zpw_sek', zpw_sek);
-      if (zpw_sek) {
-        const zpsidValue = zpw_sek.split(';')[0].split('=')[1];
-        console.log('zpsidValue', zpsidValue);
-        localStorage.setItem('zpw_sek', zpsidValue);
-      }
-    }
-
     if (location && location !== 'https://chat.zalo.me/') {
       return checkSession(location, headers);
     }
-
-    // Reached the final URL or there's no redirect
+    let extractedCookies:any = {};
+    if (setCookieHeader) {
+      setCookieHeader.forEach(cookie => {
+        const [name, value] = cookie.split(';')[0].split('=');
+        extractedCookies[name] = value;
+      });
+    }
     return {
       location,
-      cookies: setCookieHeader ? setCookieHeader.join('; ') : null,
+      cookies: extractedCookies,
     };
   } catch (error) {
     throw new Error('Error during API call: ' + error);

@@ -15,20 +15,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       method: method as Method,
       data,
       headers: {
-        ...customHeaders, // Headers tùy chỉnh được gửi từ client
-        // Cookie: req.headers.cookie || '',
+        ...customHeaders,
       },
       withCredentials: true,
     });
+    let extractedCookies:any = {};
+    if(!url.includes("wpa.chat.zalo.me")){
     // Trích xuất cookie nếu cần thiết
     const setCookieHeader = response.headers['set-cookie'];
-    let extractedCookies:any = {};
-    
+  
     if (setCookieHeader) {
       setCookieHeader.forEach(cookie => {
         const [name, value] = cookie.split(';')[0].split('=');
         extractedCookies[name] = value;
       });
+    }
     }
 
     // Gửi lại dữ liệu API cùng với các cookie cần thiết về client

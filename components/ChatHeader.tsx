@@ -8,24 +8,22 @@ import { getFinalLocationAndCookies } from "@/lib/apiClient";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Data,
   DataWaittingScan,
+  getLoginInfo,
   getQrcode,
   getWaittingScan,
   getWaittingScanConfirm,
   getZaloSession,
   getZpid,
-  QrResponse,
   veryfifyClient,
 } from "@/src/service/LoginService";
-import { generateAndStoreCode } from "@/lib/utils";
+import { getImei } from "@/lib/utils";
+import { LoginInfoModel } from "@/src/service/LoginInfoModel";
 
 export default function ChatHeader({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -64,6 +62,7 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
             console.log("Login successful");
             localStorageToCookies();
             getFinalLocationAndCookies();
+            getLoginInfoData();
           } else {
             console.log("Waiting scan did not succeed:", qrResponse);
           }
@@ -73,7 +72,7 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
             code: userProfilerResponse.data.code,
             token: userProfilerResponse.data.token,
             options: userProfilerResponse.data.options
-          } 
+          }
           setQrCodeData(dataQr);
           const code: string = userProfilerResponse.data.code;
           const userProfilerResponse2 = await getWaittingScan(code);
@@ -81,9 +80,9 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
             const userProfilerResponse1 = await getWaittingScanConfirm(code);
             setOpenLogin(false);
             setUserProfile(userProfilerResponse2.data);
-            console.log("Login successful");
             localStorageToCookies();
             getFinalLocationAndCookies();
+            getLoginInfoData();
           } else {
             console.log("Waiting scan did not succeed:", qrResponse);
           }
@@ -92,7 +91,36 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
     }
   };
 
-  const loginSuccess= async () => {
+  const getLoginInfoData = async () => {
+    var userAgent =
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
+    var imei = getImei(userAgent);
+    console.log("imei", imei);
+    const loginInfoModel = new LoginInfoModel({
+      type: 30,
+      imei: imei,
+      firstLaunchTime: Date.now(),
+    });
+    const object: string=`{"imei":${imei},"computer_name":"Web","language":"vi","ts":${Date.now()}}`;
+    const encryptKey: string=loginInfoModel.getEncryptKey() || "";
+    console.log("encryptKey",encryptKey);
+    const params: string =LoginInfoModel.encodeAES(
+      encryptKey,
+      object,
+      "base64",
+      false
+    ) || "";
+    console.log("paramUrl",params);
+    var zcid =loginInfoModel.zcid ||
+      "61359529F7EB5D5FABC3DE7675F0A1F3252F150B8A9EBFB3F0A1F55BCBF2F29AC609002EBE0EF4A31CD84E260B9FB7F6EC732EC25EE0EEC6541040D455D52DAFA2B4BCC3EDA82CD02F214DBEEF5E3018E6430387F3B785EC492195F10205EDD6";
+    var zcidExt = loginInfoModel.zcid_ext || "65fc2f";
+    // var params =
+      // "DqK6WSnpfa21o5p97otUzZaH6AX0lR3ifmtyB6kObm4FzMZAgNHosTE86uCD12VpfYxsrBopYo7BYSS0QDjwbFcSoyF%2FoHHdtPX5559RfpzkwBbX49wqqm2aHAMZ0wGIjA6IvaMlgs7DvJ23mnaI%2FGLQ%2FgFkVGsp9gVWVSRnhlzd96ZIrh2yOk%2BPanuNbf9f";
+    const loginInfoData = await getLoginInfo(zcid, zcidExt, params);
+    console.log("loginInfoData", loginInfoData);
+  };
+
+  const loginSuccess = async () => {
     router.refresh();
   };
 
@@ -107,7 +135,6 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
   };
 
   const renderDialogDemo = () => {
-    // const { image } = qrCodeData;
     let image: string | undefined;
     if ("image" in qrCodeData) {
       image = qrCodeData.image;
@@ -142,7 +169,6 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
     if ("display_name" in userProfile) {
       display_name = userProfile.display_name;
     }
-    // const { avatar, display_name } = userProfile;
     return (
       <div style={{ display: "flex", alignItems: "center" }}>
         <img

@@ -1,8 +1,9 @@
-import { fetchApi } from "@/lib/apiClient";
+import { fetchApiProxy } from "@/lib/apiClient";
+import axios from "axios";
 
 export const getZpid = async () => {
   try {
-    const data = await fetchApi({
+    const data = await fetchApiProxy({
       url: 'https://id.zalo.me/account?continue=https://chat.zalo.me/',
       method: 'GET',
       headers: {
@@ -16,7 +17,7 @@ export const getZpid = async () => {
         'sec-fetch-dest': 'document',
         'sec-fetch-mode': 'navigate',
         'sec-fetch-site': 'cross-site',
-        'upgrade-insecure-requests':"1",
+        'upgrade-insecure-requests': "1",
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
       },
     });
@@ -28,7 +29,7 @@ export const getZpid = async () => {
 export const getZaloSession = async () => {
   try {
     const zpdid: string | null = localStorage.getItem("zpdid");
-    const data = await fetchApi({
+    const data = await fetchApiProxy({
       url: 'https://id.zalo.me/account/logininfo',
       method: 'POST',
       data: {
@@ -65,7 +66,7 @@ export const veryfifyClient = async () => {
       console.error('No zlogin_session found in localStorage');
       return;
     }
-    const data = await fetchApi({
+    const data = await fetchApiProxy({
       url: 'https://id.zalo.me/account/verify-client',
       method: 'POST',
       data: {
@@ -121,7 +122,7 @@ export const getQrcode = async (): Promise<QrResponse | undefined> => {
       console.error('No zlogin_session found in localStorage');
       return;
     }
-    const response = await fetchApi({
+    const response = await fetchApiProxy({
       url: 'https://id.zalo.me/account/authen/qr/generate',
       method: 'POST',
       data: {
@@ -169,7 +170,7 @@ export interface DataWaittingScan {
 }
 
 
-export const getWaittingScan = async (code:string): Promise<WaittingScanResponse | undefined> => {
+export const getWaittingScan = async (code: string): Promise<WaittingScanResponse | undefined> => {
   try {
     const cookie: string | null = localStorage.getItem('zlogin_session');
     const zpdid: string | null = localStorage.getItem("zpdid");
@@ -177,13 +178,13 @@ export const getWaittingScan = async (code:string): Promise<WaittingScanResponse
       console.error('No zlogin_session found in localStorage');
       return;
     }
-    const response = await fetchApi({
+    const response = await fetchApiProxy({
       url: 'https://id.zalo.me/account/authen/qr/waiting-scan',
       method: 'POST',
       data: {
         'continue': 'https://chat.zalo.me/',
         'v': '5.5.4',
-        "code":code
+        "code": code
       },
       headers: {
         'accept': '*/*',
@@ -203,13 +204,13 @@ export const getWaittingScan = async (code:string): Promise<WaittingScanResponse
       },
     });
 
-    return response as WaittingScanResponse; 
+    return response as WaittingScanResponse;
   } catch (error) {
     console.error('Error fetching getWaittingScan code:', error);
   }
 };
 
-export const getWaittingScanConfirm = async (code:string): Promise<WaittingScanResponse | undefined> => {
+export const getWaittingScanConfirm = async (code: string): Promise<WaittingScanResponse | undefined> => {
   try {
     const cookie: string | null = localStorage.getItem('zlogin_session');
     const zpdid: string | null = localStorage.getItem("zpdid");
@@ -217,13 +218,13 @@ export const getWaittingScanConfirm = async (code:string): Promise<WaittingScanR
       console.error('No zlogin_session found in localStorage');
       return;
     }
-    const response = await fetchApi({
+    const response = await fetchApiProxy({
       url: 'https://id.zalo.me/account/authen/qr/waiting-confirm',
       method: 'POST',
       data: {
         'continue': 'https://chat.zalo.me/',
         'v': '5.5.4',
-        "code":code
+        "code": code
       },
       headers: {
         'accept': '*/*',
@@ -243,8 +244,52 @@ export const getWaittingScanConfirm = async (code:string): Promise<WaittingScanR
       },
     });
 
-    return response as WaittingScanResponse; 
+    return response as WaittingScanResponse;
   } catch (error) {
     console.error('Error fetching getWaittingScan code:', error);
   }
 };
+
+export interface LoginInfoResponse {
+  error_message: string;
+  data: string;
+  error_code: number;
+  error_message_localize: string
+}
+
+export const getLoginInfo = async (zcid: string, zcidExt: string, params:string): Promise<LoginInfoResponse | undefined> => {
+  try {
+    let zpw_sek: string | null = localStorage.getItem('zpw_sek');
+    let zpsid: string | null = localStorage.getItem("zpsid");
+    if (!zpw_sek) {
+      console.error('No zlogin_session found in localStorage');
+      return;
+    }
+    // zpw_sek="7yAl.414443736.a0.3H7Efm00NLROwEvE8G1TLdiYE3qYEdzzPYiJ9Z5CEsSpQ0ywU6mkEtPI5WP1FM1qVNj4I80YDWIW0LaDsMPTLW";
+    // zpsid="66aK.414443736.95.EirmzX2EJSJ8PlxS78vDn6NzF_0Xkddm8xb-yckNKqGovHza4OeM7NQEJSG";
+
+    const response = await fetchApiProxy({
+      url: `https://wpa.chat.zalo.me/api/login/getLoginInfo?zcid=${zcid}&zcid_ext=${zcidExt}&enc_ver=v2&params=${params}&type=30&client_version=641`,
+      method: 'GET',
+      headers: {
+        'accept': 'application/json, text/plain, */*',
+        'accept-language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+        'content-type': 'application/x-www-form-urlencoded',
+        'origin': 'https://chat.zalo.me',
+        'referer': 'https://chat.zalo.me/',
+        'sec-ch-ua': '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-site',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+        'cookie': `zpw_sek=${zpw_sek};zpsid=${zpsid};`,
+      },
+    });
+    return response.data as LoginInfoResponse;
+  } catch (error) {
+    console.error('Error fetching getWaittingScan code:', error);
+  }
+};
+
