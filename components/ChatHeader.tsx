@@ -24,6 +24,7 @@ import {
 } from "@/src/service/LoginService";
 import { getImei } from "@/lib/utils";
 import { LoginInfoModel } from "@/src/service/LoginInfoModel";
+import { decodeAESLogin } from "@/lib/zaloDecryptedUtils";
 
 export default function ChatHeader({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -96,10 +97,7 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
     var userAgent =
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
     var imei = getImei(userAgent);
-    imei="04880326-6619-49ec-a4fc-bc1d8ce204e8-362d7fe3d8b2581bffa359f0eeda7106";
-    console.log("imei", imei);
     const date = Date.now();
-    console.log("date", date);
     const loginInfoModel = new LoginInfoModel({
       type: 30,
       imei: imei,
@@ -112,7 +110,6 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
       ts: date,
     };
     const encryptKey: string = loginInfoModel.getEncryptKey() || "";
-    console.log("encryptKey", encryptKey);
     const params: string =
       LoginInfoModel.encodeAES(
         encryptKey,
@@ -120,12 +117,14 @@ export default function ChatHeader({ user }: { user: User | undefined }) {
         "base64",
         false
       ) || "";
-    console.log("paramUrl", params);
     var zcid =loginInfoModel.zcid || "";
     var zcidExt = loginInfoModel.zcid_ext;
     setTimeout(async () => {
       const loginInfoData = await getLoginInfo(zcid, zcidExt, params);
-      console.log("loginInfoData", loginInfoData);
+      if(loginInfoData){
+        let data= decodeAESLogin(encryptKey,loginInfoData.data);
+        console.log('dataLoginEntrycode', data);
+      }
     }, 5000);
   };
 

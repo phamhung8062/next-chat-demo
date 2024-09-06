@@ -1,4 +1,4 @@
-import CryptoJS from 'crypto-js'; // Đảm bảo bạn đã cài đặt thư viện này: npm install crypto-js
+import CryptoJS from 'crypto-js';
 
 interface ClassAConstructor {
   type: number;

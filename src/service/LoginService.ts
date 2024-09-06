@@ -265,9 +265,6 @@ export const getLoginInfo = async (zcid: string, zcidExt: string, params:string)
       console.error('No zlogin_session found in localStorage');
       return;
     }
-    // zpw_sek="7yAl.414443736.a0.3H7Efm00NLROwEvE8G1TLdiYE3qYEdzzPYiJ9Z5CEsSpQ0ywU6mkEtPI5WP1FM1qVNj4I80YDWIW0LaDsMPTLW";
-    // zpsid="66aK.414443736.95.EirmzX2EJSJ8PlxS78vDn6NzF_0Xkddm8xb-yckNKqGovHza4OeM7NQEJSG";
-
     const response = await fetchApiProxy({
       url: `https://wpa.chat.zalo.me/api/login/getLoginInfo?zcid=${zcid}&zcid_ext=${zcidExt}&enc_ver=v2&params=${encodeURIComponent(params)}&type=30&client_version=641`,
       method: 'GET',
@@ -287,7 +284,7 @@ export const getLoginInfo = async (zcid: string, zcidExt: string, params:string)
         'cookie': `zpw_sek=${zpw_sek};zpsid=${zpsid};`,
       },
     });
-    return response.data as LoginInfoResponse;
+    return response as LoginInfoResponse;
   } catch (error) {
     console.error('Error fetching getWaittingScan code:', error);
   }
